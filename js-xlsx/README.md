@@ -14,7 +14,12 @@ where `W15123456` is your GSS code.
 ### abridge postcode / GSS code lookup file
 
 The main lookup file has 2599368 rows × 15 columns - doable, but worth stripping down.
-Run `python3 abridge_pcds-oa11-lsoa11cd-msoa11cd-ladcd_file.py` to strip some columns, strip postcodes terminated before 2010, and create two more files - one of valid postcodes, one for postcodes not currently valid, but terminated from 2010 onwards. They are
+
+Run:
+ ```
+ python3 abridge_pcds-oa11-lsoa11cd-msoa11cd-ladcd_file.py
+ ```
+  to strip some columns, strip postcodes terminated before 2010, and create two more files - one of valid postcodes, one for postcodes not currently valid, but terminated from 2010 onwards. They are
 1760106 rows × 8 columns & 123384 rows × 9 columns respectively.
 
 ### trimmer
