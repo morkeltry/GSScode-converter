@@ -31,7 +31,7 @@ const csvRead = (file, process = (x, lookup)=>x, maxRows=-1) => {
           lookup = setLookup(data)
           headers=data;
         }
-        else if (remaining>-1 || maxRows==1) {
+        else if (remaining>-1 || maxRows==-1) {
           // process and push one row
           results.push( process(data, lookup) );
        }
@@ -42,5 +42,5 @@ const csvRead = (file, process = (x, lookup)=>x, maxRows=-1) => {
 
 csvRead (fileIn,
   (x, lookup)=>(x[lookup('FID')]),
-  10 )
+  )
     .then (console.log);
