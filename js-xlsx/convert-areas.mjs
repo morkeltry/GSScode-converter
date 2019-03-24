@@ -3,9 +3,16 @@ import fs from 'fs';
 // import { csvWrite }  from './trimmer/xlsx-csv-convert';
 
 
-const fileIn ='./data/pcds-oa11-lsoa11cd-msoa11cd-ladcd_Recently_terminated_postcodes_only.csv'
+const fileIn ='./data/pcds-oa11-lsoa11cd-msoa11cd-ladcd_Valid_postcodes_only.csv'
   , fileOut ='result.csv';
-const oa11Index = {};
+const indexes = { OA11:{}, lsoa11cd:{}, msoa11cd:{}, ladcd:{} };
+const shouldIndex = {
+  oa11 : true,
+  lsoa11cd : true,
+  msoa11cd : false,
+  ladcd : false,
+  pcds : false,
+}
 
 
 // process is the function to process a row as it comes in
@@ -42,20 +49,37 @@ const csvRead = (file, process = (x, lookup)=>x, maxRows=-1) => {
 }
 
 
-const indexOa11s = ( {results, headers, lookup} ) => {
+const doIndex = ( {results, headers, lookup} ) => {
   // const { results, headers, lookup } = result;
   results.forEach( row=> {
     let oa11=row[lookup('oa11')];
-    if (!oa11Index[oa11])
-      oa11Index[oa11] = { postcodes:[] };
+    let pcds=row[lookup('pcds')];
 
-    oa11Index[oa11].postcodes.push (row[lookup('pcds')]);
+    if (shouldIndex.oa11) {
+      if (!indexes.OA11[oa11])
+        indexes.OA11[oa11] = { postcodes:[] };
+
+      indexes.OA11[oa11].postcodes.push (pcds);
+      ['lsoa11cd','msoa11cd','ladcd']
+        .forEach (field => indexes.OA11[oa11][field] = (row[lookup(field)]));
+    }
+
+    // currently each of these levels jumps all the way down the hierarchy to OA11s.
+    // A better use of memory may be to index the level immediately below using logic appropriate for each
+    // this will also leave you better prepared for working with overlapping areas later on.
     ['lsoa11cd','msoa11cd','ladcd']
-      .forEach (field => oa11Index[oa11][field] = (row[lookup(field)]));
+      .forEach (field => {
+        if (shouldIndex[field]) {
+          let code=row[lookup(field)];
+          if (!indexes[field][code])
+            indexes[field][code] = { oa11s:[] };
+          indexes[field][code].oa11s.push (oa11);
+      }});
+
   });
-  console.log(oa11Index);
+  console.log(indexes.OA11);
 }
 
 
 csvRead (fileIn)
-  .then (indexOa11s);
+  .then (doIndex);
