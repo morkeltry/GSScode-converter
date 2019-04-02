@@ -14,6 +14,7 @@
   "devDependencies": {},
   "scripts": {
     "trim": "node  --experimental-modules ./trimmer/index.mjs",
+    "convert": "node  --experimental-modules ./convert-areas.mjs",    
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

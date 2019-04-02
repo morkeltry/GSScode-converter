@@ -1,6 +1,9 @@
 import csvParse from 'csv-parse';
 import fs from 'fs';
 // import { csvWrite }  from './trimmer/xlsx-csv-convert';
+// import { isGssCode, startsWithGssCode, whatIs } from './GSS-decoders';
+import anyName from './GSS-decoders'
+
 
 
 const fileIn ='./data/pcds-oa11-lsoa11cd-msoa11cd-ladcd_Valid_postcodes_only.csv'
@@ -14,6 +17,12 @@ const shouldIndex = {
   pcds : false,
 }
 
+
+// csvRead takes a filname, optionally a row processing function, and optionally a maximum number of rows to consume
+// It returns a promise resolving with
+// { results: an array of processed rows (each as array),
+//   headers: an array of headers,
+//   lookup: a function returning the index within the row of the provided string header }
 
 // process is the function to process a row as it comes in
 // it's parameter lookup is a lookup function defined here in csvRead, in setLookup.
@@ -48,7 +57,7 @@ const csvRead = (file, process = (x, lookup)=>x, maxRows=-1) => {
   });
 }
 
-
+// doIndex will, when complete, create indexes for each column flagged in (the module level constant) shouldIndex
 const doIndex = ( {results, headers, lookup} ) => {
   // const { results, headers, lookup } = result;
   results.forEach( row=> {
@@ -80,6 +89,22 @@ const doIndex = ( {results, headers, lookup} ) => {
   console.log(indexes.OA11);
 }
 
+const tellMeAbout = gssCode => {
+  if (!isGssCode(gssCode)) {
+    console.log(`I dont know what ${gssCode} is :)`);
+    return
+  };
+  console.log(`${gssCode} is: ${whatIs(gssCode)}`);
+  console.log(`${gssCode} has ${
+    indexCodesOf(gssCode).length ?
+      `index code: ${indexCodesOf(gssCode).join(' or ')}`
+      : 'unknown index code.'
+  }`);
+  return
+}
 
-csvRead (fileIn)
-  .then (doIndex);
+tellMeAbout('S00090540');
+tellMeAbout('S01090540');
+
+// csvRead (fileIn)
+//   .then (doIndex);
