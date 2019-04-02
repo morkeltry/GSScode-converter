@@ -8,7 +8,7 @@ import anyName from './GSS-decoders'
 
 const fileIn ='./data/pcds-oa11-lsoa11cd-msoa11cd-ladcd_Valid_postcodes_only.csv'
   , fileOut ='result.csv';
-const indexes = { OA11:{}, lsoa11cd:{}, msoa11cd:{}, ladcd:{} };
+const indexes = { OA11:{}, LSOA11CD:{}, MSOA11CD:{}, LADCD:{} };
 const shouldIndex = {
   oa11 : true,
   lsoa11cd : true,
@@ -72,25 +72,37 @@ const doIndex = ( {results, headers, lookup} ) => {
       if (!indexes.OA11[oa11])
         indexes.OA11[oa11] = { postcodes:[] };
 
+      // NB We are makign the assumption here of good data -ie OA11s should map to exactly one larger area
       indexes.OA11[oa11].postcodes.push (pcds);
       ['lsoa11cd','msoa11cd','ladcd']
         .forEach (field => indexes.OA11[oa11][field] = (row[lookup(field)]));
     }
+
+    // if (shouldIndex.lsoa11cd) {
+    //   if (!indexes.LSOA11CD[lsoa11cd])
+    //     indexes.LSOA11CD[lsoa11cd] = { oa11s:[] };
+    //
+    //   indexes.LSOA11CD[lsoa11cd].oa11s.push (oa11);
+    //   ['msoa11cd','ladcd']
+    //     .forEach (field => indexes.LSOA11CD[lsoa11cd][field] = (row[lookup(field)]));
+    // }
 
     // currently each of these levels jumps all the way down the hierarchy to OA11s.
     // A better use of memory may be to index the level immediately below using logic appropriate for each
     // this will also leave you better prepared for working with overlapping areas later on.
     ['lsoa11cd','msoa11cd','ladcd']
       .forEach (field => {
+        const upperField= field.toUpperCase();
         if (shouldIndex[field]) {
           let code=row[lookup(field)];
-          if (!indexes[field][code])
-            indexes[field][code] = { oa11s:[] };
-          indexes[field][code].oa11s.push (oa11);
+          if (!indexes[upperField][code])
+            indexes[upperField][code] = { oa11s:[] };
+          indexes[upperField][code].oa11s.push (oa11);
       }});
 
   });
   console.log(indexes.OA11);
+  console.log(indexes.LSOA11CD);
 }
 
 const tellMeAbout = gssCode => {
@@ -104,22 +116,61 @@ const tellMeAbout = gssCode => {
       `index code: ${indexCodesOf(gssCode).join(' or ')}`
       : 'unknown index code.'
   }\n`);
-  if (indexCodesOf(gssCode).indexOf('OA11')>-1 && indexes.OA11) {
-    if (!indexes.OA11[gssCode]) {
-      console.log(`OA11 index missing for ${gssCode}`);
-      return
-    }
-    const knownAreas = indexes.OA11[gssCode];
-    if (knownAreas.lsoa11cd)
-      console.log(`${gssCode} has LSOA11CD ${knownAreas.lsoa11cd}`);
-    if (knownAreas.msoa11cd)
-      console.log(`${gssCode} has MSOA11CD ${knownAreas.msoa11cd}`);
-    if (knownAreas.ladcd)
-      console.log(`${gssCode} has LADCD ${knownAreas.ladcd}`);
-    if (knownAreas.postcodes)
-      console.log(`${gssCode} has postcodes ${knownAreas.postcodes.join(', ')}`);
-    console.log(' ');
+
+  let knownAreas;
+
+  const findFirstIn = (arr1, arr2)=>
+    arr1.find( el1=> arr2.find( el2=> el1===el2 )) ;
+
+  const codeType = findFirstIn (indexCodesOf(gssCode), ['OA11', 'LSOA11CD', 'MSOA11CD', 'LADCD'])
+  if (!indexes[codeType]) {
+    console.log(`${codeType} index missing `);
     return
+  }
+  if (!indexes[codeType][gssCode]) {
+    console.log(`${codeType} index missing for ${gssCode}`);
+    return
+  }
+
+  switch (codeType) {
+    case 'OA11':
+      // show OA11 info:
+      knownAreas = indexes.OA11[gssCode];
+      if (knownAreas.lsoa11cd)
+        console.log(`${gssCode} has LSOA11CD: ${knownAreas.lsoa11cd}`);
+      if (knownAreas.msoa11cd)
+        console.log(`${gssCode} has MSOA11CD: ${knownAreas.msoa11cd}`);
+      if (knownAreas.ladcd)
+        console.log(`${gssCode} has LADCD: ${knownAreas.ladcd}`);
+      if (knownAreas.postcodes)
+        console.log(`${gssCode} has ${knownAreas.postcodes.length} postcodes: ${knownAreas.postcodes.join(', ')}`);
+      console.log(' ');
+    break;
+
+
+    case 'LSOA11CD':
+      // show LSOA11CD info:
+      knownAreas = indexes.LSOA11CD[gssCode];
+      console.log(' !!Not implemented!! ');
+      console.log(' ');
+    break;
+
+    case 'MSOA11CD':
+      // show MSOA11CD info:
+      knownAreas = indexes.MSOA11CD[gssCode];
+      console.log(' !!Not implemented!! ');
+      console.log(' ');
+    break;
+
+    case 'LADCD':
+      // show LADCD info:
+      knownAreas = indexes.LADCD[gssCode];
+      console.log(' !!Not implemented!! ');
+      console.log(' ');
+    break;
+
+    default :
+      console.log(`Something's not right here! \n ${codeType} found but no case found to handle it `);
   }
 
   return
