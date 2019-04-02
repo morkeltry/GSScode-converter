@@ -17,6 +17,10 @@ const shouldIndex = {
   pcds : false,
 }
 
+// pass these as maxRows to limit the amount of data loaded!
+const VALID_ABERDEEN_POSTCODES = 18171;
+const VALID_A_POSTCODES_PLUS_BIRMINGHAM_B = 62042;
+
 
 // csvRead takes a filname, optionally a row processing function, and optionally a maximum number of rows to consume
 // It returns a promise resolving with
@@ -91,7 +95,7 @@ const doIndex = ( {results, headers, lookup} ) => {
 
 const tellMeAbout = gssCode => {
   if (!isGssCode(gssCode)) {
-    console.log(`I dont know what ${gssCode} is :)`);
+    console.log(`I dont know what ${gssCode} is :(`);
     return
   };
   console.log(`${gssCode} is: ${whatIs(gssCode)}`);
@@ -99,12 +103,36 @@ const tellMeAbout = gssCode => {
     indexCodesOf(gssCode).length ?
       `index code: ${indexCodesOf(gssCode).join(' or ')}`
       : 'unknown index code.'
-  }`);
+  }\n`);
+  if (indexCodesOf(gssCode).indexOf('OA11')>-1 && indexes.OA11) {
+    if (!indexes.OA11[gssCode]) {
+      console.log(`OA11 index missing for ${gssCode}`);
+      return
+    }
+    const knownAreas = indexes.OA11[gssCode];
+    if (knownAreas.lsoa11cd)
+      console.log(`${gssCode} has LSOA11CD ${knownAreas.lsoa11cd}`);
+    if (knownAreas.msoa11cd)
+      console.log(`${gssCode} has MSOA11CD ${knownAreas.msoa11cd}`);
+    if (knownAreas.ladcd)
+      console.log(`${gssCode} has LADCD ${knownAreas.ladcd}`);
+    if (knownAreas.postcodes)
+      console.log(`${gssCode} has postcodes ${knownAreas.postcodes.join(', ')}`);
+    console.log(' ');
+    return
+  }
+
   return
 }
 
-tellMeAbout('S00090540');
-tellMeAbout('S01090540');
 
-// csvRead (fileIn)
-//   .then (doIndex);
+console.log(whatIs('S01006646'));
+csvRead (fileIn, undefined, VALID_A_POSTCODES_PLUS_BIRMINGHAM_B)
+  .then ( results => {
+    doIndex (results)
+
+    tellMeAbout('S00090540');
+    tellMeAbout('E05090540');
+    tellMeAbout('E00045170');
+    tellMeAbout('E00049607');
+  });
