@@ -8,12 +8,12 @@ import anyName from './GSS-decoders'
 
 const fileIn ='./data/pcds-oa11-lsoa11cd-msoa11cd-ladcd_Valid_postcodes_only.csv'
   , fileOut ='result.csv';
-const indexes = { OA11:{}, LSOA11CD:{}, MSOA11CD:{}, LADCD:{} };
+const indexes = { OA11:{}, LSOA11CD:{}, MSOA11CD:{}, LAD17CD:{} };
 const shouldIndex = {
   oa11 : true,
   lsoa11cd : true,
   msoa11cd : false,
-  ladcd : false,
+  LAD17CD : false,
   pcds : false,
 }
 
@@ -68,29 +68,22 @@ const doIndex = ( {results, headers, lookup} ) => {
     let oa11=row[lookup('oa11')];
     let pcds=row[lookup('pcds')];
 
+    // OA11 indexing done here
     if (shouldIndex.oa11) {
       if (!indexes.OA11[oa11])
         indexes.OA11[oa11] = { postcodes:[] };
 
-      // NB We are makign the assumption here of good data -ie OA11s should map to exactly one larger area
+      // NB We are making the assumption here of good data -ie OA11s should map to exactly one larger area
       indexes.OA11[oa11].postcodes.push (pcds);
-      ['lsoa11cd','msoa11cd','ladcd']
+      ['lsoa11cd','msoa11cd','LAD17CD']
         .forEach (field => indexes.OA11[oa11][field] = (row[lookup(field)]));
     }
 
-    // if (shouldIndex.lsoa11cd) {
-    //   if (!indexes.LSOA11CD[lsoa11cd])
-    //     indexes.LSOA11CD[lsoa11cd] = { oa11s:[] };
-    //
-    //   indexes.LSOA11CD[lsoa11cd].oa11s.push (oa11);
-    //   ['msoa11cd','ladcd']
-    //     .forEach (field => indexes.LSOA11CD[lsoa11cd][field] = (row[lookup(field)]));
-    // }
-
+    // GENERAL INDEXING DONE HERE
     // currently each of these levels jumps all the way down the hierarchy to OA11s.
     // A better use of memory may be to index the level immediately below using logic appropriate for each
     // this will also leave you better prepared for working with overlapping areas later on.
-    ['lsoa11cd','msoa11cd','ladcd']
+    ['lsoa11cd','msoa11cd','lad17cd']
       .forEach (field => {
         const upperField= field.toUpperCase();
         if (shouldIndex[field]) {
@@ -101,8 +94,8 @@ const doIndex = ( {results, headers, lookup} ) => {
       }});
 
   });
-  console.log(indexes.OA11);
-  console.log(indexes.LSOA11CD);
+  // console.log(indexes.OA11);
+  // console.log(indexes.LSOA11CD);
 }
 
 const tellMeAbout = gssCode => {
@@ -122,7 +115,7 @@ const tellMeAbout = gssCode => {
   const findFirstIn = (arr1, arr2)=>
     arr1.find( el1=> arr2.find( el2=> el1===el2 )) ;
 
-  const codeType = findFirstIn (indexCodesOf(gssCode), ['OA11', 'LSOA11CD', 'MSOA11CD', 'LADCD'])
+  const codeType = findFirstIn (indexCodesOf(gssCode), ['OA11', 'LSOA11CD', 'MSOA11CD', 'LAD17CD'])
   if (!indexes[codeType]) {
     console.log(`${codeType} index missing `);
     return
@@ -140,8 +133,8 @@ const tellMeAbout = gssCode => {
         console.log(`${gssCode} has LSOA11CD: ${knownAreas.lsoa11cd}`);
       if (knownAreas.msoa11cd)
         console.log(`${gssCode} has MSOA11CD: ${knownAreas.msoa11cd}`);
-      if (knownAreas.ladcd)
-        console.log(`${gssCode} has LADCD: ${knownAreas.ladcd}`);
+      if (knownAreas.lad17cd)
+        console.log(`${gssCode} has LAD17CD: ${knownAreas.lad17cd}`);
       if (knownAreas.postcodes)
         console.log(`${gssCode} has ${knownAreas.postcodes.length} postcodes: ${knownAreas.postcodes.join(', ')}`);
       console.log(' ');
@@ -151,7 +144,8 @@ const tellMeAbout = gssCode => {
     case 'LSOA11CD':
       // show LSOA11CD info:
       knownAreas = indexes.LSOA11CD[gssCode];
-      console.log(' !!Not implemented!! ');
+      console.log(`LSOA11CD index for ${gssCode} has keys: ${Object.keys(knownAreas)}`);
+      console.log(`LSOA11CD index for ${gssCode} contains OA11s: ${knownAreas.oa11s.join(', ')}`);
       console.log(' ');
     break;
 
@@ -162,9 +156,9 @@ const tellMeAbout = gssCode => {
       console.log(' ');
     break;
 
-    case 'LADCD':
+    case 'LAD17CD':
       // show LADCD info:
-      knownAreas = indexes.LADCD[gssCode];
+      knownAreas = indexes.LAD17CD[gssCode];
       console.log(' !!Not implemented!! ');
       console.log(' ');
     break;
@@ -186,4 +180,5 @@ csvRead (fileIn, undefined, VALID_A_POSTCODES_PLUS_BIRMINGHAM_B)
     tellMeAbout('E05090540');
     tellMeAbout('E00045170');
     tellMeAbout('E00049607');
+    tellMeAbout('E01032176');
   });

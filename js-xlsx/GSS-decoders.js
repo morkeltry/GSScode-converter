@@ -11,15 +11,15 @@ gss.E33	=gss.W35	=gss.S34	=gss.N19	=	{ name: "Workplace Zones"}
 gss.E92	=gss.W92	=gss.S92	=gss.N92	=	{ name: "Country"}
 gss.E30	=gss.W22	=gss.S22	=gss.N12	=gss.K01 = { name: "Travel to Work Areas"}
 // overrides
-                             gss.N00	= { name: "Small Areas"}
+                             gss.N00      .name= "Small Area"
 
 // England, Wales, Scotland
-gss.E01	=gss.W01	=gss.S01 =	{ name: "Lower layer Super Output Area (LSOA)"}
-gss.E02	=gss.W02	=gss.S02 =	{ name: "Middle layer Super Output Area (MSOA)"}
+gss.E01	=gss.W01	=gss.S01 =	{ name: "Lower layer Super Output Area (LSOA)",             indexCodes: ['LSOA11CD']}
+gss.E02	=gss.W02	=gss.S02 =	{ name: "Middle layer Super Output Area (MSOA)",            indexCodes: ['MSOA11CD']}
 gss.E04 =gss.W04  =gss.S35 =	{ name: "Civil Parish"}
 gss.E32	=gss.W09	=gss.S16 =	{ name: "London Assembly; Welsh Assembly; Scottish parliament constituency"}
 gss.E26	=gss.W18	=gss.S21 =	{ name: "National Park "}
-gss.E06	=gss.W06	=gss.S12 =	{ name: "Unitary Authority"}
+gss.E06	=gss.W06	=gss.S12 =	{ name: "Unitary Authority",                                indexCodes: ['LAD17CD']}
          gss.W10	=gss.S17 =	{ name: "Welsh / Scottish Electoral Region"}
 // overrides
          gss.W10           =	{ name: "Welsh Assembly Electoral Region"}
@@ -34,9 +34,9 @@ gss.E35	=gss.W38  =gss.K06 =  { name: "Built Up Area Sub-Divisions"}
 
 
 // England
-gss.E07	=	{ name: "Non-Metropolitan District (two-tier)"}
-gss.E08	=	{ name: "Metropolitan Borough"}
-gss.E09	=	{ name: "London Borough"}
+gss.E07	=	{ name: "Non-Metropolitan District (two-tier)",                                 indexCodes: ['LAD17CD']}
+gss.E08	=	{ name: "Metropolitan Borough",                                                 indexCodes: ['LAD17CD']}
+gss.E09	=	{ name: "London Borough",                                                       indexCodes: ['LAD17CD']}
 gss.E10	=	{ name: "County"}
 gss.E11	=	{ name: "Metropolitan County"}
 gss.E12	=	{ name: "English Region"}
@@ -48,6 +48,7 @@ gss.E18	=gss.L00 =gss.M00 =	{ name: "Strategic Health Authorities"}
 gss.W03	= { name: "Upper layer Super Output Area (USOA)"}
 
 // Northern Ireland
+gss.N09	= { name: "Local Government Districts",                                           indexCodes: ['LAD17CD']}
 gss.N24	= { name: "Police Force Districts"}
 
 

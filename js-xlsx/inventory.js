@@ -15,6 +15,17 @@ const Gb=Mb*1024;
 },
 
 {
+  name : 'Local Authority Districts (December 2017) Names and Codes in the United Kingdom',
+  url : 'geoportal1-ons.opendata.arcgis.com/datasets/a267b55f601a4319a9955b0197e3cb81_0.csv',
+  olderVersionsUrls : [],
+  location:  './data/Local_Authority_Districts_December_2017_Names_and_Codes_in_the_United_Kingdom.csv',
+  extent : 'EWSN',
+  size :  11 *Kb  ,
+  codeTypes : ['LAD17CD', 'LAD17NM', 'FID'],
+  olderCodeTypes : []
+},
+
+{
   name : 'Ward to Local Authority District (December 2017) Lookup in the United Kingdom',
   url : 'https://opendata.arcgis.com/datasets/046394602a6b415e9fe4039083ef300e_0.csv',
   olderVersionsUrls : [],
@@ -105,6 +116,17 @@ const Gb=Mb*1024;
 },
 
 
+
+{
+  name : 'Local Authority District to Region (December 2017) Lookup in England ',
+  url : 'https://opendata.arcgis.com/datasets/c457af6314f24b20bb5de8fe41e05898_0.csv',
+  olderVersionsUrls : [],
+  location:  './data/Local_Authority_District_to_Region_December_2017_Lookup_in_England_.csv',
+  extent : 'E',
+  size :  16 *Kb  ,
+  codeTypes : ['LAD17CD', 'LAD17NM', 'RGN17CD', 'RGN17NM', 'FID'],
+  olderCodeTypes : []
+},
 
 {
   name : 'Admin Areas',
