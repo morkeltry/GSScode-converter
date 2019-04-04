@@ -69,8 +69,22 @@ const csvRead = (file, process= (x, lookup)=>x, maxRows=-1, progressLog= ()=>{} 
 const loadInventoriedDataset = ( dataset, options ) => new Promise ( (resolve, reject) => {
   const size = dataset.size || Infinity;
   console.log(size);
-  const remainingBytesLogger = chunk=> dataset.remaining-= chunk;
-  const remainingPercentLogger = chunk=> dataset.remaining-= 100*(chunk/size);
+  const remainingBytesLogger = chunk=> {
+    if (chunk>=0)
+      dataset.remaining-= chunk
+    else {
+      dataset.loaded=true;
+      dataset.remaining=0;
+    };
+  }
+  const remainingPercentLogger = chunk=> {
+    if (chunk>=0)
+      dataset.remaining-= 100*(chunk/size)
+    else {
+      dataset.loaded=true;
+      dataset.remaining=0;
+    };
+  }
   let loggerInterval;
 
   try {
@@ -203,4 +217,4 @@ const tellMeAbout = gssCode => {
 }
 
 
-  export { indexes, csvRead, loadInventoriedDataset, tellMeAbout }
+  export { indexes, csvRead, loadInventoriedDataset, doIndex, tellMeAbout }

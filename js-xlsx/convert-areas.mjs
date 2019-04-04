@@ -1,7 +1,7 @@
 
 import anyName from './GSS-decoders';
 import inventory from './inventory';
-import { indexes, csvRead, loadInventoriedDataset, tellMeAbout } from './ingest-datasets.mjs';
+import { indexes, csvRead, loadInventoriedDataset, doIndex, tellMeAbout } from './ingest-datasets.mjs';
 
 // pass these as maxRows to limit the amount of data loaded!
 const VALID_ABERDEEN_POSTCODES = 18171;
