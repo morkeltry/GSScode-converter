@@ -18,6 +18,8 @@ const shouldIndex = {
   pcds : false,
 }
 
+const logFileLoading = true;
+
 // pass these as maxRows to limit the amount of data loaded!
 const VALID_ABERDEEN_POSTCODES = 18171;
 const VALID_A_POSTCODES_PLUS_BIRMINGHAM_B = 62042;
@@ -33,7 +35,7 @@ const VALID_A_POSTCODES_PLUS_BIRMINGHAM_B = 62042;
 // it's parameter lookup is a lookup function defined here in csvRead, in setLookup.
 // Unfortunatly passing back and forth nested closures like we're in React is
 // necessary to get the speed boost from the lookup.
-const csvRead = (file, process = (x, lookup)=>x, maxRows=-1) => {
+const csvRead = (file, process= (x, lookup)=>x, maxRows=-1, progressLog= ()=>{} ) => {
   const results = [];
   let remaining = maxRows;
   let headers, lookup;
@@ -49,6 +51,7 @@ const csvRead = (file, process = (x, lookup)=>x, maxRows=-1) => {
     fs.createReadStream(file)
       .pipe(csvParse())
       .on('data', (data) => {
+        progressLog(data.length)
         if (remaining-- == maxRows){
           lookup = setLookup(data)
           headers=data;
@@ -62,11 +65,27 @@ const csvRead = (file, process = (x, lookup)=>x, maxRows=-1) => {
   });
 }
 
+
+//NB loadInventoriedDataset is just a wrapper - most of this code is the logger!
 const loadInventoriedDataset = ( dataset, options ) => new Promise ( (resolve, reject) => {
+  const size = dataset.size || Infinity;
+  console.log(size);
+  const remainingBytesLogger = chunk=> dataset.remaining-= chunk;
+  const remainingPercentLogger = chunk=> dataset.remaining-= 100*(chunk/size);
+  let loggerInterval;
+
   try {
     const { process, maxRows } = options;
-    csvRead (dataset.location, process, maxRows)
-      .then (resolve) ;
+    dataset.remaining = 100;
+    csvRead (dataset.location, process, maxRows, remainingPercentLogger)
+      .then ( result=> {
+        resolve (result);
+        clearInterval (loggerInterval);
+      }) ;
+    if (options.logFileLoading === undefined ? logFileLoading : options.logFileLoading)
+      loggerInterval = setInterval ( ()=>{
+        console.log(`${dataset.shortname || ''}: ${dataset.remaining.toFixed(2)}%`);
+      }, 500);
   }
   catch (err) {
     reject (err);
