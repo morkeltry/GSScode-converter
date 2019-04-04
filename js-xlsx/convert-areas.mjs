@@ -2,11 +2,12 @@ import csvParse from 'csv-parse';
 import fs from 'fs';
 // import { csvWrite }  from './trimmer/xlsx-csv-convert';
 // import { isGssCode, startsWithGssCode, whatIs } from './GSS-decoders';
-import anyName from './GSS-decoders'
+import anyName from './GSS-decoders';
+import inventory from './inventory';
 
 
 
-const fileIn ='./data/pcds-oa11-lsoa11cd-msoa11cd-ladcd_Valid_postcodes_only.csv'
+let fileIn ='./data/pcds-oa11-lsoa11cd-msoa11cd-ladcd_Valid_postcodes_only.csv'
   , fileOut ='result.csv';
 const indexes = { OA11:{}, LSOA11CD:{}, MSOA11CD:{}, LAD17CD:{} };
 const shouldIndex = {
@@ -60,6 +61,19 @@ const csvRead = (file, process = (x, lookup)=>x, maxRows=-1) => {
       .on('end', () => resolve ({ results, headers, lookup }));
   });
 }
+
+const loadInventoriedDataset = ( dataset, options ) => new Promise ( (resolve, reject) => {
+  try {
+    const { process, maxRows } = options;
+    csvRead (dataset.location, process, maxRows)
+      .then (resolve) ;
+  }
+  catch (err) {
+    reject (err);
+  }
+});
+
+
 
 // doIndex will, when complete, create indexes for each column flagged in (the module level constant) shouldIndex
 const doIndex = ( {results, headers, lookup} ) => {
@@ -172,7 +186,8 @@ const tellMeAbout = gssCode => {
 
 
 console.log(whatIs('S01006646'));
-csvRead (fileIn, undefined, VALID_A_POSTCODES_PLUS_BIRMINGHAM_B)
+// csvRead (fileIn, undefined, VALID_A_POSTCODES_PLUS_BIRMINGHAM_B)
+loadInventoriedDataset( inventory.postcodes_valid_to_OAs, {maxRows : VALID_A_POSTCODES_PLUS_BIRMINGHAM_B} )
   .then ( results => {
     doIndex (results)
 
