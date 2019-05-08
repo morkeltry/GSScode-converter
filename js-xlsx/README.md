@@ -17,6 +17,7 @@ The main lookup file has 2599368 rows × 15 columns - doable, but worth strippin
 
 Run:
  ```
+ pip3 install pandas
  python3 abridge_pcds-oa11-lsoa11cd-msoa11cd-ladcd_file.py
  ```
   to strip some columns, strip postcodes terminated before 2010, and create two more files - one of valid postcodes, one for postcodes not currently valid, but terminated from 2010 onwards. They are
@@ -107,3 +108,39 @@ Contains a bunch of helper functions.
   };
 
 `interpretAndTrim` calls `interpretOnsWithRowHierarchy` to get suggested trim and attempts to output this intelligently for user checking. Currently does not await user confirmation, but should do in future. Then performs the trim with `trimTheEasyWay` and returns and object `{sheet, trim}` where sheet is the sheet after blanking and merging the items in `trim` and `trim` is the trim object generated *unless* overridden by passing `interpretAndTrim`  a trim object. In that case, a trim object is still generated and output, but *is then discarded and overriden* by the passed trim object.
+
+
+### bash scripts & troubleshooting:
+
+##### download-postcodes
+```
+chmod 755 download-postcodes
+./download-postcodes
+```
+
+You'll probably want those converted too (see above):
+```
+python3 abridge_pcds-oa11-lsoa11cd-msoa11cd-ladcd_file.py
+```
+
+
+##### File name too long (error)
+
+The data.json files have long and specific filenames, on the assumption that our filesystems can handles filenames up to about 255 bytes. However, some filesystems may have a problem with that.
+
+Check out your filesystem: `df -Th .`
+
+- is it `ecryptfs`? If so, it's probably using filename encryption, which reduces available filename length to 45 bytes. No worries- if you can reserve a fixed amount of space for the data files, there's a script to make a filesystem within a filesystem within a filesystem in which you can store the data.
+- If it's any other filesystem, google the maximum filename length.
+Also, check your filename encoding, just in case it uses more than one byte per character: `echo $LC_CTYPE`
+
+To use larger filenames in a filesystem within a filesystem, activate permissions on the scripts to do so:
+```
+chmod 755 create-fs-for-longer-filenames
+chmod 755 mount-data-fs
+```
+The first script reserves 1Gb. (4096 bytes X 262144). Change that in the script if you need.
+
+Run it with `./create-fs-for-longer-filenames`
+
+You will lose the mount when you restart the machine and will need to run `./mount-data-fs`, or else add the mount info to `/etc/fstab`

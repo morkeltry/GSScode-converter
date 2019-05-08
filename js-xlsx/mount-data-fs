@@ -1,0 +1,3 @@
+sudo mount -o nousers data.img data
+sudo chown "$USER" data
+sudo chown "$USER":"$USER" data 2>/dev/null

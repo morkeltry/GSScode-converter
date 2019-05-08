@@ -1,0 +1,5 @@
+dd if=/dev/zero of=data.img bs=4096 count=262144
+mkfs.ext4 data.img
+mkdir ./data
+chmod 775 ./data
+./mount-data-fs
