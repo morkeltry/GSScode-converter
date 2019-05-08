@@ -3,9 +3,9 @@ import numpy as np
 
 OAs_lookup = pd.read_csv ('./data/Postcode_to_Output_Area_to_Lower_Layer_Super_Output_Area_to_Middle_Layer_Super_Output_Area_to_Local_Authority_District_February_2018_Lookup_in_the_UK.csv', dtype='unicode' )
 
-abridged=OAs_lookup.drop(OAs_lookup.columns[2],axis=1)
-abridged=abridged.drop(abridged.columns[10:14],axis=1)
+abridged=OAs_lookup.drop(OAs_lookup.columns[10:14],axis=1)
 abridged=abridged.drop(abridged.columns[5],axis=1)
+abridged=abridged.drop(abridged.columns[:2],axis=1)
 
 valid=abridged[pd.to_numeric(abridged['doterm'])==0]
 valid=valid.drop(valid.columns[2],axis=1)

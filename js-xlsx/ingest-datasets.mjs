@@ -42,6 +42,8 @@ const csvRead = (file, process= (x, lookup)=>x, maxRows=-1, progressLog= ()=>{} 
   // lookup(name) is quicker than .indexOf(name)
   const setLookup = headers => {
     const dict={};
+    if (!headers.length)
+      throw Error('Oh dear - headers were empty or not found');
     headers.forEach ((name,idx) => dict[name]=idx);
     return (name => dict[name])
   }
@@ -51,6 +53,7 @@ const csvRead = (file, process= (x, lookup)=>x, maxRows=-1, progressLog= ()=>{} 
       .pipe(csvParse())
       .on('data', (data) => {
         progressLog(data.length)
+        // this line changes remaining when it runs, so will only run once
         if (remaining-- == maxRows){
           lookup = setLookup(data)
           headers=data;
@@ -58,8 +61,8 @@ const csvRead = (file, process= (x, lookup)=>x, maxRows=-1, progressLog= ()=>{} 
         else if (remaining>-1 || maxRows===-1) {
           // process and push one row
           results.push( process(data, lookup) );
-       }
-       })
+        }
+      })
       .on('end', () => resolve ({ results, headers, lookup }));
   });
 }
@@ -68,7 +71,7 @@ const csvRead = (file, process= (x, lookup)=>x, maxRows=-1, progressLog= ()=>{} 
 //NB loadInventoriedDataset is just a wrapper - most of this code is the logger!
 const loadInventoriedDataset = ( dataset, options ) => new Promise ( (resolve, reject) => {
   const size = dataset.size || Infinity;
-  console.log(size);
+  console.log(`${size}b`);
   const remainingBytesLogger = chunk=> {
     if (chunk>=0)
       dataset.remaining-= chunk
@@ -108,6 +111,8 @@ const loadInventoriedDataset = ( dataset, options ) => new Promise ( (resolve, r
 
 
 // doIndex will, when complete, create indexes for each column flagged in (the module level constant) shouldIndex
+// Access the indexes with indexes[CODETYPE][CODE][SMALLERCODETYPE] === [code1, code2, ...]
+// eg indexes.OA11.S00090540.postcodes === ['AB10 4AX', 'AB10 4AY']
 const doIndex = ( {results, headers, lookup} ) => {
   // const { results, headers, lookup } = result;
   results.forEach( row=> {
@@ -154,7 +159,7 @@ const tellMeAbout = gssCode => {
     indexCodesOf(gssCode).length ?
       `index code: ${indexCodesOf(gssCode).join(' or ')}`
       : 'unknown index code.'
-  }\n`);
+  }`);
 
   let knownAreas;
 
@@ -183,7 +188,7 @@ const tellMeAbout = gssCode => {
         console.log(`${gssCode} has LAD17CD: ${knownAreas.lad17cd}`);
       if (knownAreas.postcodes)
         console.log(`${gssCode} has ${knownAreas.postcodes.length} postcodes: ${knownAreas.postcodes.join(', ')}`);
-      console.log(' ');
+      console.log(' \n');
     break;
 
 

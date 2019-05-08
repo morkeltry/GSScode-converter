@@ -85,7 +85,7 @@ const addIndexCodes = (prefix, indexCodes) =>
 
 
 isGssCode = code => {
-  return startsWithGssCode (code) && code.length==9
+  return startsWithGssCode (code) && code.length===9
 }
 
 startsWithGssCode = code => {

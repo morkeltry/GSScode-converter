@@ -14,7 +14,7 @@ loadInventoriedDataset( inventory.postcodes_valid_to_OAs, {maxRows : VALID_A_POS
   .then ( results => {
     doIndex (results)
 
-    // real OA in AB10 (multiple postcodes)
+    // real OA in AB10 ( particularly large OA in centre of town at the cross of multiple postcodes)
     tellMeAbout('S00090540');
 
     // fake English ward
