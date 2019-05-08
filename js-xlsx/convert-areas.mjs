@@ -14,9 +14,18 @@ loadInventoriedDataset( inventory.postcodes_valid_to_OAs, {maxRows : VALID_A_POS
   .then ( results => {
     doIndex (results)
 
+    // real OA in AB10 (multiple postcodes)
     tellMeAbout('S00090540');
+
+    // fake English ward
     tellMeAbout('E05090540');
+
+    // real OA  in B99
     tellMeAbout('E00045170');
+
+    // real OA  in B62
     tellMeAbout('E00049607');
+
+    // real LSOA, Bromsgrove
     tellMeAbout('E01032176');
   });

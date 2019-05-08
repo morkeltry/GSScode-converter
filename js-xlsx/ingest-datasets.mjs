@@ -163,11 +163,11 @@ const tellMeAbout = gssCode => {
 
   const codeType = findFirstIn (indexCodesOf(gssCode), ['OA11', 'LSOA11CD', 'MSOA11CD', 'LAD17CD'])
   if (!indexes[codeType]) {
-    console.log(`${codeType} index missing `);
+    console.log(`${codeType} index missing \n`);
     return
   }
   if (!indexes[codeType][gssCode]) {
-    console.log(`${codeType} index missing for ${gssCode}`);
+    console.log(`${codeType} index missing for ${gssCode}\n`);
     return
   }
 

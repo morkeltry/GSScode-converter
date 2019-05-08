@@ -76,7 +76,7 @@ Contains a bunch of helper functions.
 `csvWrite (workbook, fileOut, ignores)` writes workbook memory object to fileOut in CSV. Delimters / line endings are hardcoded as `,` and `\r\n`. Synchronous file write. Receives optional `ignores`, a trim object of rows and columns to supress. Trim object may or may not include blank lines (auto-genereated ones do not), but blank liones are supressed by default unless includeBlankLines is set.
 
 ##### simple helpers:
-`canonical (cellNAmeString)` returns a number to sort cell names by, ordered by row then column.
+`canonical (cellNameString)` returns a number to sort cell names by, ordered by row then column.
 
 `incX` / `incY (cell, amount)` increments cell by amount rows / columns (or 1 row/ column if amoount not specified)
 
