@@ -71,7 +71,9 @@ const csvRead = (file, process= (x, lookup)=>x, maxRows=-1, progressLog= ()=>{} 
 //NB loadInventoriedDataset is just a wrapper - most of this code is the logger!
 const loadInventoriedDataset = ( dataset, options ) => new Promise ( (resolve, reject) => {
   const size = dataset.size || Infinity;
-  console.log(`${size}b`);
+
+  console.log(`${dataset.size || '?'} b`);
+
   const remainingBytesLogger = chunk=> {
     if (chunk>=0)
       dataset.remaining-= chunk
@@ -131,7 +133,7 @@ const doIndex = ( {results, headers, lookup} ) => {
     }
 
     // GENERAL INDEXING DONE HERE
-    // currently each of these levels jumps all the way down the hierarchy to OA11s.
+    // currently each of these levels jumps all the way down the heirarchy to OA11s.
     // A better use of memory may be to index the level immediately below using logic appropriate for each
     // this will also leave you better prepared for working with overlapping areas later on.
     ['lsoa11cd','msoa11cd','lad17cd']
@@ -141,7 +143,9 @@ const doIndex = ( {results, headers, lookup} ) => {
           let code=row[lookup(field)];
           if (!indexes[upperField][code])
             indexes[upperField][code] = { oa11s:[] };
-          indexes[upperField][code].oa11s.push (oa11);
+          // /: unsure why the following check is necessary - TODO: investigate!
+          if (!indexes[upperField][code].oa11s.includes(oa11))
+            indexes[upperField][code].oa11s.push (oa11);
       }});
 
   });
@@ -149,77 +153,5 @@ const doIndex = ( {results, headers, lookup} ) => {
   // console.log(indexes.LSOA11CD);
 }
 
-const tellMeAbout = gssCode => {
-  if (!isGssCode(gssCode)) {
-    console.log(`I dont know what ${gssCode} is :(`);
-    return
-  };
-  console.log(`${gssCode} is: ${whatIs(gssCode)}`);
-  console.log(`${gssCode} has ${
-    indexCodesOf(gssCode).length ?
-      `index code: ${indexCodesOf(gssCode).join(' or ')}`
-      : 'unknown index code.'
-  }`);
 
-  let knownAreas;
-
-  const findFirstIn = (arr1, arr2)=>
-    arr1.find( el1=> arr2.find( el2=> el1===el2 )) ;
-
-  const codeType = findFirstIn (indexCodesOf(gssCode), ['OA11', 'LSOA11CD', 'MSOA11CD', 'LAD17CD'])
-  if (!indexes[codeType]) {
-    console.log(`${codeType} index missing \n`);
-    return
-  }
-  if (!indexes[codeType][gssCode]) {
-    console.log(`${codeType} index missing for ${gssCode}\n`);
-    return
-  }
-
-  switch (codeType) {
-    case 'OA11':
-      // show OA11 info:
-      knownAreas = indexes.OA11[gssCode];
-      if (knownAreas.lsoa11cd)
-        console.log(`${gssCode} has LSOA11CD: ${knownAreas.lsoa11cd}`);
-      if (knownAreas.msoa11cd)
-        console.log(`${gssCode} has MSOA11CD: ${knownAreas.msoa11cd}`);
-      if (knownAreas.lad17cd)
-        console.log(`${gssCode} has LAD17CD: ${knownAreas.lad17cd}`);
-      if (knownAreas.postcodes)
-        console.log(`${gssCode} has ${knownAreas.postcodes.length} postcodes: ${knownAreas.postcodes.join(', ')}`);
-      console.log(' \n');
-    break;
-
-
-    case 'LSOA11CD':
-      // show LSOA11CD info:
-      knownAreas = indexes.LSOA11CD[gssCode];
-      console.log(`LSOA11CD index for ${gssCode} has keys: ${Object.keys(knownAreas)}`);
-      console.log(`LSOA11CD index for ${gssCode} contains OA11s: ${knownAreas.oa11s.join(', ')}`);
-      console.log(' ');
-    break;
-
-    case 'MSOA11CD':
-      // show MSOA11CD info:
-      knownAreas = indexes.MSOA11CD[gssCode];
-      console.log(' !!Not implemented!! ');
-      console.log(' ');
-    break;
-
-    case 'LAD17CD':
-      // show LADCD info:
-      knownAreas = indexes.LAD17CD[gssCode];
-      console.log(' !!Not implemented!! ');
-      console.log(' ');
-    break;
-
-    default :
-      console.log(`Something's not right here! \n ${codeType} found but no case found to handle it `);
-  }
-
-  return
-}
-
-
-  export { indexes, csvRead, loadInventoriedDataset, doIndex, tellMeAbout }
+  export { indexes, csvRead, loadInventoriedDataset, doIndex }

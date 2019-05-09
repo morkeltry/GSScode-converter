@@ -31,8 +31,8 @@ The trimmer strips the rows and columns specified by the 'trim', then attempts t
 To test it:
 ```
 cd transformers/js-xlsx
-cat trimmer/index.mjs |grep "fileIn ='
-cat trimmer/index.mjs |grep "fileOut ='
+cat trimmer/index.mjs |grep "fileIn ="
+cat trimmer/index.mjs |grep "fileOut ="
 ```
 Grab the [.xls file](https://www.ons.gov.uk/peoplepopulationandcommunity/housing/adhocs/008281ct07902011censusaccommodationtypebyhouseholdcompositionmergedlocalauthorities) and save it to the appropriate location ( `fileIn` relative to `js-xlsx/trimmer`)
 This file is CT0790, which has a specific definition to be trimmed to (in `js-xlsx/trimmer/dataset-specific-trims.js`)
