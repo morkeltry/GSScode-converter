@@ -18,6 +18,8 @@ const isChildOf = (childCodeType, parentCodeType) => {
     .filter (heirarchy => heirarchy.includes(parentCodeType))
     .some (heirarchy => {
       const childCandidate = heirarchy[ heirarchy.indexOf(parentCodeType) -1 ] ;
+      if (childCandidate==='PCDS' && childCodeType.startsWith('POSTCODE'))
+        return true
       return (childCodeType===childCandidate || childCodeType===childCandidate+'S');
     })
   );
