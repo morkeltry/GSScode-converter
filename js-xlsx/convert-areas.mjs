@@ -7,13 +7,16 @@ import { indexes, csvRead, loadInventoriedDataset, doIndex } from './ingest-data
 const VALID_ABERDEEN_POSTCODES = 18171;
 const VALID_A_POSTCODES_PLUS_BIRMINGHAM_B = 62042;
 
+// TODO: DOUBLE CHECK - is MSOA11CD actually a child of LAD17CD???
+const heirarchies = [
+  ['PCDS', 'OA11', 'LSOA11CD', 'MSOA11CD', 'LAD17CD']
+]
+
 // childCodeType, parentCodeType may be upper or lower case; childCodeType may be pluralised with s.
 const isChildOf = (childCodeType, parentCodeType) => {
+console.log('compare:',childCodeType, parentCodeType );
   childCodeType = childCodeType.toUpperCase();
   parentCodeType = parentCodeType.toUpperCase();
-  const heirarchies = [
-    ['PCDS', 'OA11', 'LSOA11CD', 'MSOA11CD', 'LAD17CD']
-  ]
   return (heirarchies
     .filter (heirarchy => heirarchy.includes(parentCodeType))
     .some (heirarchy => {
@@ -36,13 +39,13 @@ const relations = codeType => {
   }
   const wholeParents = [], wholeChildren = [], partialParents = [], partialChildren = [];
 
+  // TODO: Generalise for any heirarchy
   if (codeType==='pcds')
     wholeParents.push ('OA11');
   if (codeType==='OA11' || wholeParents.includes('OA11'))
     wholeParents.push ('LSOA11CD');
   if (codeType==='LSOA11CD' || wholeParents.includes('LSOA11CD'))
     wholeParents.push ('MSOA11CD');
-  // TODO: DOUBLE CHECK - is this correct???
   if (codeType==='MSOA11CD' || wholeParents.includes('MSOA11CD'))
     wholeParents.push ('LAD17CD');
 
@@ -138,6 +141,7 @@ const report = ( gssCode, options={} ) => {
     return { gssCode, failure: 'unknown code type' }
 
   const response = { gssCode };
+  // Should only be one sensible code type to populate indexedAs  - keep an eye on..
   const indexedAs = findFirstIn (indexCodesOf(gssCode), Object.keys(indexes));
   const possibleCodeTypes = indexCodesOf(gssCode);
   // Use response.codeType||response.codeTypeBeingUsedForNow until deciding on a final structure.
@@ -166,15 +170,34 @@ const report = ( gssCode, options={} ) => {
     Object.assign (response, relations(response.codeType||response.codeTypeBeingUsedForNow));
 
     if (response.wholeParents && response.wholeParents.length) {
-      response.parents = response.parents || [];
-      response.wholeParents.forEach (parentCodeType => {
-        // response.parents.push
-      });
+      response.parents = (response.parents || []) .concat(response.wholeParents);
+// /////////////////////////////////////////////////////////////////////////////////////////
+// Need to start indexing consecutive levels. Currently indexes OAs from each level
+console.log('PARENTS of ',gssCode);
+console.log(response.parents);
+
+response.parents.forEach (parent => {
+          console.log(indexes[indexedAs][gssCode]);
+          console.log(indexes[indexedAs][gssCode][parent.toLowerCase()]);
+          console.log(!!indexes[indexedAs][gssCode][parent.toLowerCase()]);
+        });
+
+// the relevant parent data, _once_you've_indexed_them !!
+// after indexing those, need to count up children of parent in such a way as to allow more detail later
+// /////////////////////////////////////////////////////////////////////////////////////////
+      response.parents
+        .filter (
+          parent => !!indexes[indexedAs][gssCode][parent]
+        )
+        .forEach (parent => {
+          console.log('assuming isChildOf (',indexedAs,parent,')',isChildOf (indexedAs,parent));
+        })
+
+
     }
 
     if (response.wholeChildren && response.wholeChildren.length) {
       response.children = response.children || [];
-
 console.log('possibles:' , Object.keys(indexes[indexedAs][gssCode]) );
       Object.keys(indexes[indexedAs][gssCode])
         .filter (
@@ -249,14 +272,14 @@ loadInventoriedDataset( inventory.postcodes_valid_to_OAs, {maxRows : VALID_A_POS
     // real LSOA, Bromsgrove
     tellMeAbout('E01032176');
 
-    console.log('S00090540');
+    console.log('\nS00090540');
     console.log(report('S00090540'));
-    console.log('E05090540');
+    console.log('\nE05090540');
     console.log(report('E05090540'));
-    console.log('E00045170');
-    console.log(report('E00045170'));
-    console.log('E00049607');
+    // console.log('\nE00045170');
+    // console.log(report('E00045170'));    // loadsa output!
+    console.log('\nE00049607');
     console.log(report('E00049607'));
-    console.log('E01032176');
-    console.log(report('E01032176'));
+    // console.log('\nE01032176');
+    // console.log(report('E01032176'));
   });
