@@ -18,9 +18,9 @@ console.log('compare:',childCodeType, parentCodeType );
   childCodeType = childCodeType.toUpperCase();
   parentCodeType = parentCodeType.toUpperCase();
   return (heirarchies
-    .filter (heirarchy => heirarchy.includes(parentCodeType))
-    .some (heirarchy => {
-      const childCandidate = heirarchy[ heirarchy.indexOf(parentCodeType) -1 ] ;
+    .filter (hierarchy => hierarchy.includes(parentCodeType))
+    .some (hierarchy => {
+      const childCandidate = hierarchy[ hierarchy.indexOf(parentCodeType) -1 ] ;
       if (childCandidate==='PCDS' && childCodeType.startsWith('POSTCODE'))
         return true
       return (childCodeType===childCandidate || childCodeType===childCandidate+'S');
@@ -28,7 +28,7 @@ console.log('compare:',childCodeType, parentCodeType );
   );
 }
 
-// only implemented for whole parents/ children
+// only implemented for whole ancestors/ descendants
 const relations = codeType => {
   if (typeof codeType !== 'string')
     console.log('Not a string!!!! (I should throw an error here)');
@@ -37,28 +37,28 @@ const relations = codeType => {
     console.log(`${codeType} was not in `,indexables);
     return {}
   }
-  const wholeParents = [], wholeChildren = [], partialParents = [], partialChildren = [];
+  const wholeAncestors = [], wholeDescendants = [], partialAncestors = [], partialDescendants = [];
 
-  // TODO: Generalise for any heirarchy
+  // TODO: Generalise for any hierarchy
   if (codeType==='pcds')
-    wholeParents.push ('OA11');
-  if (codeType==='OA11' || wholeParents.includes('OA11'))
-    wholeParents.push ('LSOA11CD');
-  if (codeType==='LSOA11CD' || wholeParents.includes('LSOA11CD'))
-    wholeParents.push ('MSOA11CD');
-  if (codeType==='MSOA11CD' || wholeParents.includes('MSOA11CD'))
-    wholeParents.push ('LAD17CD');
+    wholeAncestors.push ('OA11');
+  if (codeType==='OA11' || wholeAncestors.includes('OA11'))
+    wholeAncestors.push ('LSOA11CD');
+  if (codeType==='LSOA11CD' || wholeAncestors.includes('LSOA11CD'))
+    wholeAncestors.push ('MSOA11CD');
+  if (codeType==='MSOA11CD' || wholeAncestors.includes('MSOA11CD'))
+    wholeAncestors.push ('LAD17CD');
 
-  if (codeType==='LAD17CD' || wholeChildren.includes('LAD17CD'))
-    wholeChildren.push ('MSOA11CD');
-  if (codeType==='MSOA11CD' || wholeChildren.includes('MSOA11CD'))
-    wholeChildren.push ('LSOA11CD');
-  if (codeType==='LSOA11CD' || wholeChildren.includes('LSOA11CD'))
-    wholeChildren.push ('OA11');
-  if (codeType==='OA11' || wholeChildren.includes('OA11'))
-    wholeChildren.push ('pcds');
+  if (codeType==='LAD17CD' || wholeDescendants.includes('LAD17CD'))
+    wholeDescendants.push ('MSOA11CD');
+  if (codeType==='MSOA11CD' || wholeDescendants.includes('MSOA11CD'))
+    wholeDescendants.push ('LSOA11CD');
+  if (codeType==='LSOA11CD' || wholeDescendants.includes('LSOA11CD'))
+    wholeDescendants.push ('OA11');
+  if (codeType==='OA11' || wholeDescendants.includes('OA11'))
+    wholeDescendants.push ('pcds');
 
-  return { wholeParents, wholeChildren }// , partialParents, partialChildren }
+  return { wholeAncestors, wholeDescendants }// , partialAncestors, partialDescendants }
 }
 
 // returns any first match between arrays, or undefined if no match.
@@ -134,6 +134,7 @@ const tellMeAbout = gssCode => {
   return
 }
 
+
 const report = ( gssCode, options={} ) => {
   if (!gssCode)
     return { failure: 'error', error: 'no code provided'}
@@ -149,7 +150,7 @@ const report = ( gssCode, options={} ) => {
 
   if (possibleCodeTypes.length > 0) {
     if (possibleCodeTypes.length > 1) {
-      response.possibleCodeTypes = indexCodesOf(gssCode);
+      response.possibleCodeTypes = indexCodesOf(gssCode);descendant
       response.codeTypeBeingUsedForNow = indexedAs || indexCodesOf(gssCode)[0];
     }
     else
@@ -157,7 +158,7 @@ const report = ( gssCode, options={} ) => {
     Object.assign (response, relations(response.codeType||response.codeTypeBeingUsedForNow));
   }
   else {
-    // unknown code type - don't bother with heirarchy
+    // unknown code type - don't bother with hierarchy
   }
 
   response.indexed = !(indexedAs===undefined);
@@ -169,39 +170,39 @@ const report = ( gssCode, options={} ) => {
   if (indexedAs) {
     Object.assign (response, relations(response.codeType||response.codeTypeBeingUsedForNow));
 
-    if (response.wholeParents && response.wholeParents.length) {
-      response.parents = (response.parents || []) .concat(response.wholeParents);
+    if (response.wholeAncestors && response.wholeAncestors.length) {
+      response.ancestors = (response.ancestors || []) .concat(response.wholeAncestors);
 // /////////////////////////////////////////////////////////////////////////////////////////
 // Need to start indexing consecutive levels. Currently indexes OAs from each level
-console.log('PARENTS of ',gssCode);
-console.log(response.parents);
+console.log('ANCESTOR TYPES of ',gssCode);
+console.log(response.ancestors);
 
-response.parents.forEach (parent => {
+response.ancestors.forEach (ancestor => {
           console.log(indexes[indexedAs][gssCode]);
-          console.log(indexes[indexedAs][gssCode][parent.toLowerCase()]);
-          console.log(!!indexes[indexedAs][gssCode][parent.toLowerCase()]);
+          console.log(indexes[indexedAs][gssCode][ancestor.toLowerCase()]);
+          console.log(!!indexes[indexedAs][gssCode][ancestor.toLowerCase()]);
         });
 
-// the relevant parent data, _once_you've_indexed_them !!
-// after indexing those, need to count up children of parent in such a way as to allow more detail later
+// the relevant ancestor data, _once_you've_indexed_them !!
+// after indexing those, need to count up descendants of ancestor in such a way as to allow more detail later
 // /////////////////////////////////////////////////////////////////////////////////////////
-      response.parents
+      response.ancestors
         .filter (
-          parent => !!indexes[indexedAs][gssCode][parent]
+          ancestor => !!indexes[indexedAs][gssCode][ancestor]
         )
-        .forEach (parent => {
-          console.log('assuming isChildOf (',indexedAs,parent,')',isChildOf (indexedAs,parent));
+        .forEach (ancestor => {
+          console.log('assuming isChildOf (',indexedAs,ancestor,')',isChildOf (indexedAs,ancestor));
         })
 
 
     }
 
-    if (response.wholeChildren && response.wholeChildren.length) {
-      response.children = response.children || [];
+    if (response.wholeDescendants && response.wholeDescendants.length) {
+      response.descendants = response.descendants || [];
 console.log('possibles:' , Object.keys(indexes[indexedAs][gssCode]) );
       Object.keys(indexes[indexedAs][gssCode])
         .filter (
-          childIndexType => isChildOf (childIndexType,indexedAs)
+          descendantIndexType => isChildOf (descendantIndexType,indexedAs)
         )
         // we would usually expect one or zero types to pass the filter
         .forEach (childIndexType => {
@@ -216,19 +217,19 @@ console.log('possibles:' , Object.keys(indexes[indexedAs][gssCode]) );
                   // TODO: check if there is a human population in the child area
                   childIndexWithProportions[childName] = nominalProportionPerChild;
                 })
-            response.children.push (childIndexWithProportions);
+            response.descendants.push (childIndexWithProportions);
           });
 
     }
-    if (response.partialParents && response.partialParents.length) {
-      response.parents = response.parents || [];
-      response.partialParents.forEach (parentCodeType => {
+    if (response.partialAncestors && response.partialAncestors.length) {
+      response.ancestors = response.ancestors || [];
+      response.partialAncestors.forEach (ancestorCodeType => {
 
       });
     }
-    if (response.partialChildren && response.partialChildren.length) {
-      response.children = response.children || [];
-      response.partialChildren.forEach (childCodeType => {
+    if (response.partialDescendants && response.partialDescendants.length) {
+      response.descendants = response.descendants || [];
+      response.partialDescendants.forEach (descendantCodeType => {
 
       });
     }
@@ -272,6 +273,12 @@ loadInventoriedDataset( inventory.postcodes_valid_to_OAs, {maxRows : VALID_A_POS
     // real LSOA, Bromsgrove
     tellMeAbout('E01032176');
 
+    // real MSOA, Bromsgrove
+    tellMeAbout('E02006697');
+
+    // real LADCD, Bromsgrove
+    tellMeAbout('E07000234');
+
     console.log('\nS00090540');
     console.log(report('S00090540'));
     console.log('\nE05090540');
@@ -280,6 +287,12 @@ loadInventoriedDataset( inventory.postcodes_valid_to_OAs, {maxRows : VALID_A_POS
     // console.log(report('E00045170'));    // loadsa output!
     console.log('\nE00049607');
     console.log(report('E00049607'));
-    // console.log('\nE01032176');
-    // console.log(report('E01032176'));
+
+    console.log('\nE01032176');
+    console.log(report('E01032176'));
+
+    // console.log('\nE02006697');
+    // console.log(report('E02006697'));
+    // console.log('\nE07000234');
+    // console.log(report('E07000234'));
   });

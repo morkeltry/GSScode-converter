@@ -12,8 +12,8 @@ const indexes = { OA11:{}, LSOA11CD:{}, MSOA11CD:{}, LAD17CD:{} };
 const shouldIndex = {
   oa11 : true,
   lsoa11cd : true,
-  msoa11cd : false,
-  LAD17CD : false,
+  msoa11cd : true,
+  LAD17CD : true,
   pcds : false,
 }
 
@@ -133,7 +133,7 @@ const doIndex = ( {results, headers, lookup} ) => {
     }
 
     // GENERAL INDEXING DONE HERE
-    // currently each of these levels jumps all the way down the heirarchy to OA11s.
+    // currently each of these levels jumps all the way down the hierarchy to OA11s.
     // A better use of memory may be to index the level immediately below using logic appropriate for each
     // this will also leave you better prepared for working with overlapping areas later on.
     ['lsoa11cd','msoa11cd','lad17cd']
