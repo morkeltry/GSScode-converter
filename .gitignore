@@ -5,6 +5,15 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# data directory - too many big files to store on github!
+data
+
+# 1Gb filesystem image file for data directory in systems with small filenames
+data.img
+
+#### random words to force git to recognise updated file
+stuff
+
 # Runtime data
 pids
 *.pid
