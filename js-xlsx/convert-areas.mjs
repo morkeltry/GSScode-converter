@@ -62,7 +62,7 @@ const relations = codeType => {
 }
 
 // returns any first match between arrays, or undefined if no match.
-const findFirstIn = (arr1, arr2)=>
+const firstCommonElement = (arr1, arr2)=>
   arr1.find( el1=> arr2.find( el2=> el1===el2 )) ;
 
 // tellMeAbout is for testing functionality
@@ -80,7 +80,7 @@ const tellMeAbout = gssCode => {
 
   let knownAreas;
 
-  const codeType = findFirstIn (indexCodesOf(gssCode), ['OA11', 'LSOA11CD', 'MSOA11CD', 'LAD17CD'])
+  const codeType = firstCommonElement (indexCodesOf(gssCode), ['OA11', 'LSOA11CD', 'MSOA11CD', 'LAD17CD'])
   if (!indexes[codeType]) {
     console.log(`${codeType} index missing \n`);
     return
@@ -135,6 +135,7 @@ const tellMeAbout = gssCode => {
 }
 
 
+
 const report = ( gssCode, options={} ) => {
   if (!gssCode)
     return { failure: 'error', error: 'no code provided'}
@@ -142,16 +143,23 @@ const report = ( gssCode, options={} ) => {
     return { gssCode, failure: 'unknown code type' }
 
   const response = { gssCode };
-  // Should only be one sensible code type to populate indexedAs  - keep an eye on..
-  const indexedAs = findFirstIn (indexCodesOf(gssCode), Object.keys(indexes));
+  // Should only be one sensible code type to populate indexedAsCodetype  - keep an eye on..
   const possibleCodeTypes = indexCodesOf(gssCode);
+  const indexedAsCodetype = firstCommonElement (possibleCodeTypes, Object.keys(indexes));
   // Use response.codeType||response.codeTypeBeingUsedForNow until deciding on a final structure.
   response.codeLooksLike = whatIs(gssCode);
+  switch (indexCodesOf(gssCode)) {
+    case 0 :
+    break;
+    case 1 :
+    break;
+    default :
+  }
 
   if (possibleCodeTypes.length > 0) {
     if (possibleCodeTypes.length > 1) {
-      response.possibleCodeTypes = indexCodesOf(gssCode);descendant
-      response.codeTypeBeingUsedForNow = indexedAs || indexCodesOf(gssCode)[0];
+      response.possibleCodeTypes = possibleCodeTypes;
+      response.codeTypeBeingUsedForNow = indexedAsCodetype || indexCodesOf(gssCode)[0];
     }
     else
       response.codeType = indexCodesOf(gssCode)[0]
@@ -161,13 +169,13 @@ const report = ( gssCode, options={} ) => {
     // unknown code type - don't bother with hierarchy
   }
 
-  response.indexed = !(indexedAs===undefined);
-  if (indexedAs!==undefined)
-    response.indexedAs = indexedAs;
+  response.indexed = !(indexedAsCodetype===undefined);
+  if (indexedAsCodetype!==undefined)
+    response.indexedAsCodetype = indexedAsCodetype;
 
 // TODO: include shouldIndex - explains why not indexed.
 
-  if (indexedAs) {
+  if (indexedAsCodetype) {
     Object.assign (response, relations(response.codeType||response.codeTypeBeingUsedForNow));
 
     if (response.wholeAncestors && response.wholeAncestors.length) {
@@ -178,9 +186,9 @@ console.log('ANCESTOR TYPES of ',gssCode);
 console.log(response.ancestors);
 
 response.ancestors.forEach (ancestor => {
-          console.log(indexes[indexedAs][gssCode]);
-          console.log(indexes[indexedAs][gssCode][ancestor.toLowerCase()]);
-          console.log(!!indexes[indexedAs][gssCode][ancestor.toLowerCase()]);
+          console.log(indexes[indexedAsCodetype][gssCode]);
+          console.log(indexes[indexedAsCodetype][gssCode][ancestor.toLowerCase()]);
+          console.log(!!indexes[indexedAsCodetype][gssCode][ancestor.toLowerCase()]);
         });
 
 // the relevant ancestor data, _once_you've_indexed_them !!
@@ -188,10 +196,10 @@ response.ancestors.forEach (ancestor => {
 // /////////////////////////////////////////////////////////////////////////////////////////
       response.ancestors
         .filter (
-          ancestor => !!indexes[indexedAs][gssCode][ancestor]
+          ancestor => !!indexes[indexedAsCodetype][gssCode][ancestor]
         )
         .forEach (ancestor => {
-          console.log('assuming isChildOf (',indexedAs,ancestor,')',isChildOf (indexedAs,ancestor));
+          console.log('assuming isChildOf (',indexedAsCodetype,ancestor,')',isChildOf (indexedAsCodetype,ancestor));
         })
 
 
@@ -199,15 +207,15 @@ response.ancestors.forEach (ancestor => {
 
     if (response.wholeDescendants && response.wholeDescendants.length) {
       response.descendants = response.descendants || [];
-console.log('possibles:' , Object.keys(indexes[indexedAs][gssCode]) );
-      Object.keys(indexes[indexedAs][gssCode])
+console.log('possibles:' , Object.keys(indexes[indexedAsCodetype][gssCode]) );
+      Object.keys(indexes[indexedAsCodetype][gssCode])
         .filter (
-          descendantIndexType => isChildOf (descendantIndexType,indexedAs)
+          descendantIndexType => isChildOf (descendantIndexType,indexedAsCodetype)
         )
         // we would usually expect one or zero types to pass the filter
         .forEach (childIndexType => {
-          console.log('definitely isChildOf (',childIndexType,indexedAs,')');
-            const childIndex = indexes[indexedAs][gssCode][childIndexType];
+          console.log('definitely isChildOf (',childIndexType,indexedAsCodetype,')');
+            const childIndex = indexes[indexedAsCodetype][gssCode][childIndexType];
             console.log(childIndex);
             const numberOfChildren = childIndex.length;
             const nominalProportionPerChild = 1/numberOfChildren;
@@ -295,4 +303,5 @@ loadInventoriedDataset( inventory.postcodes_valid_to_OAs, {maxRows : VALID_A_POS
     // console.log(report('E02006697'));
     // console.log('\nE07000234');
     // console.log(report('E07000234'));
+
   });
