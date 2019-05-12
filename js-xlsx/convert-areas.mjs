@@ -29,6 +29,7 @@ console.log('compare:',childCodeType, parentCodeType );
 }
 
 // only implemented for whole ancestors/ descendants
+// returns object with whole & partial ancestors & descendants
 const relations = codeType => {
   if (typeof codeType !== 'string')
     console.log('Not a string!!!! (I should throw an error here)');
@@ -134,8 +135,20 @@ const tellMeAbout = gssCode => {
   return
 }
 
+const siblingsOf = ( gssCode, options={} ) => {
+  const { returnUnpackedIfOnlyOneParent=true } = options;
+  switch (indexCodesOf(gssCode)) {
+    case 0 :
+    break;
+    case 1 :
+    break;
+    default :
+  }
 
 
+}
+
+// given a GSS code, report() sets a bunch of properties on an object relating to that code, and returns it.
 const report = ( gssCode, options={} ) => {
   if (!gssCode)
     return { failure: 'error', error: 'no code provided'}
@@ -146,54 +159,65 @@ const report = ( gssCode, options={} ) => {
   // Should only be one sensible code type to populate indexedAsCodetype  - keep an eye on..
   const possibleCodeTypes = indexCodesOf(gssCode);
   const indexedAsCodetype = firstCommonElement (possibleCodeTypes, Object.keys(indexes));
-  // Use response.codeType||response.codeTypeBeingUsedForNow until deciding on a final structure.
+
   response.codeLooksLike = whatIs(gssCode);
-  switch (indexCodesOf(gssCode)) {
-    case 0 :
-    break;
-    case 1 :
-    break;
-    default :
+  // Set (and use) response.codeType||response.codeTypeBeingUsedForNow until deciding on a final structure.
+  switch (possibleCodeTypes.length) {
+    case 0 : {
+      // unknown code type - don't bother with hierarchy
+      }
+      break;
+    case 1 : {
+        response.codeType = possibleCodeTypes[0];
+        Object.assign (response, relations(response.codeType));
+      }
+      break;
+    default : {
+        response.possibleCodeTypes = possibleCodeTypes;
+        response.codeTypeBeingUsedForNow = indexedAsCodetype || possibleCodeTypes[0];
+        Object.assign (response, relations(response.codeTypeBeingUsedForNow));
+      }
   }
 
-  if (possibleCodeTypes.length > 0) {
-    if (possibleCodeTypes.length > 1) {
-      response.possibleCodeTypes = possibleCodeTypes;
-      response.codeTypeBeingUsedForNow = indexedAsCodetype || indexCodesOf(gssCode)[0];
-    }
-    else
-      response.codeType = indexCodesOf(gssCode)[0]
-    Object.assign (response, relations(response.codeType||response.codeTypeBeingUsedForNow));
-  }
-  else {
-    // unknown code type - don't bother with hierarchy
-  }
+  // if (possibleCodeTypes.length > 0) {
+  //   if (possibleCodeTypes.length > 1) {
+  //     response.possibleCodeTypes = possibleCodeTypes;
+  //     response.codeTypeBeingUsedForNow = indexedAsCodetype || indexCodesOf(gssCode)[0];
+  //   }
+  //   else
+  //     response.codeType = indexCodesOf(gssCode)[0]
+  //   Object.assign (response, relations(response.codeType||response.codeTypeBeingUsedForNow));
+  // }
+  // else {
+  //   // unknown code type - don't bother with hierarchy
+  // }
 
   response.indexed = !(indexedAsCodetype===undefined);
-  if (indexedAsCodetype!==undefined)
+  if (response.indexed)
     response.indexedAsCodetype = indexedAsCodetype;
 
 // TODO: include shouldIndex - explains why not indexed.
 
-  if (indexedAsCodetype) {
-    Object.assign (response, relations(response.codeType||response.codeTypeBeingUsedForNow));
 
+  // get down to business
+  if (response.indexed) {
     if (response.wholeAncestors && response.wholeAncestors.length) {
       response.ancestors = (response.ancestors || []) .concat(response.wholeAncestors);
-// /////////////////////////////////////////////////////////////////////////////////////////
-// Need to start indexing consecutive levels. Currently indexes OAs from each level
-console.log('ANCESTOR TYPES of ',gssCode);
-console.log(response.ancestors);
+    // /////////////////////////////////////////////////////////////////////////////////////////
+    // Need to start indexing consecutive levels. Currently indexes OAs from each level
+    console.log('ANCESTOR TYPES of ',gssCode);
+    console.log(response.ancestors);
 
-response.ancestors.forEach (ancestor => {
-          console.log(indexes[indexedAsCodetype][gssCode]);
-          console.log(indexes[indexedAsCodetype][gssCode][ancestor.toLowerCase()]);
-          console.log(!!indexes[indexedAsCodetype][gssCode][ancestor.toLowerCase()]);
-        });
+    response.ancestors.forEach (ancestor => {
+              console.log(indexes[indexedAsCodetype][gssCode]);
+              console.log('looking for property:',ancestor.toLowerCase());
+              console.log(indexes[indexedAsCodetype][gssCode][ancestor.toLowerCase()]);
+              console.log(!!indexes[indexedAsCodetype][gssCode][ancestor.toLowerCase()]);
+            });
 
-// the relevant ancestor data, _once_you've_indexed_them !!
-// after indexing those, need to count up descendants of ancestor in such a way as to allow more detail later
-// /////////////////////////////////////////////////////////////////////////////////////////
+    // the relevant ancestor data, _once_you've_indexed_them !!
+    // after indexing those, need to count up descendants of ancestor in such a way as to allow more detail later
+    // /////////////////////////////////////////////////////////////////////////////////////////
       response.ancestors
         .filter (
           ancestor => !!indexes[indexedAsCodetype][gssCode][ancestor]
