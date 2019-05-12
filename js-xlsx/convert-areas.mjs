@@ -7,10 +7,21 @@ import { indexes, csvRead, loadInventoriedDataset, doIndex } from './ingest-data
 const VALID_ABERDEEN_POSTCODES = 18171;
 const VALID_A_POSTCODES_PLUS_BIRMINGHAM_B = 62042;
 
+// warning: "If a postcode straddled an electoral ward/division or parish boundary, it was split between two or more OAs"
+// "In Scotland, OAs were based on postcodes as at December 2000 and related to 2001 wards. However, the OAs did not necessarily fit inside ward boundaries"
+ // https://www.ons.gov.uk/methodology/geography/ukgeographies/censusgeography
 // TODO: DOUBLE CHECK - is MSOA11CD actually a child of LAD17CD???
+
 const heirarchies = [
   ['PCDS', 'OA11', 'LSOA11CD', 'MSOA11CD', 'LAD17CD']
 ]
+
+const pluralPropertyNameOf = codeType => {
+  if (['POSTCODE','PCDS','postcode','pcds'].includes(codeType))
+    return 'postcodes'
+  else
+    return codeType.toLowerCase()+'s'
+}
 
 // childCodeType, parentCodeType may be upper or lower case; childCodeType may be pluralised with s.
 const isChildOf = (childCodeType, parentCodeType) => {
@@ -135,17 +146,51 @@ const tellMeAbout = gssCode => {
   return
 }
 
+
+
+
 const siblingsOf = ( gssCode, options={} ) => {
-  const { returnUnpackedIfOnlyOneParent=true } = options;
-  switch (indexCodesOf(gssCode)) {
-    case 0 :
-    break;
-    case 1 :
-    break;
-    default :
+  const { specifiedParent, returnUnpackedIfOnlyOneParent=true } = options;
+  var possibleCodeTypes = indexCodesOf(gssCode);
+  // assuming for now that only one codeType is possible - TODO: nest filters to work forEach possibleCodeType
+  const codeType=possibleCodeTypes[0];
+
+console.log(possibleCodeTypes);
+console.log(gssCode);
+console.log(Object.keys(indexes[codeType][gssCode]));
+
+  // filter relations which a) are the specified parent IF one is specified & b) are parents
+  var possibleParents =  Object.keys(indexes[codeType][gssCode])
+    .filter (relation => !specifiedParent || (relation.toupperCase() === specifiedParent.toupperCase() ))
+    .filter (relation => possibleCodeTypes.some(thisCode => isChildOf(thisCode,relation)) );
+
+  if (!possibleCodeTypes.length)
+    return { error: 'no index'};
+  if (!possibleParents.length){
+    console.log('Indexes:', Object.keys(indexes[codeType][gssCode]));
+    console.log('specifiedParent:', specifiedParent||'none');
+    console.log('possibleParents:', possibleParents);
+    return { error: 'no parents'};
+  }
+  if (possibleParents.length > 1) {
+    console.log('siblingFail: possibleParents:, possibleParents');
+    return { error: 'ambiguous request for siblings'};
   }
 
+  var parentType = possibleParents[0]
+  const parent = indexes[codeType][gssCode][parentType];
+  parentType = parentType.toUpperCase();
 
+  console.log('parent:',parent);
+  console.log(parentType);
+  // console.log(indexes [parentType]);
+  // console.log(indexes [parentType] [parent]);
+  console.log(pluralPropertyNameOf(codeType));
+  console.log(indexes [parentType] [parent] [pluralPropertyNameOf(codeType)]);
+  const siblings = indexes [parentType] [parent] [pluralPropertyNameOf(codeType)];
+  console.log('siblings:',siblings);
+
+  return siblings
 }
 
 // given a GSS code, report() sets a bunch of properties on an object relating to that code, and returns it.
@@ -327,5 +372,8 @@ loadInventoriedDataset( inventory.postcodes_valid_to_OAs, {maxRows : VALID_A_POS
     // console.log(report('E02006697'));
     // console.log('\nE07000234');
     // console.log(report('E07000234'));
+
+    console.log(siblingsOf('E01032176'));
+    console.log(siblingsOf('E00045170'));
 
   });
