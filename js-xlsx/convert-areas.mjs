@@ -1,76 +1,61 @@
 
 import anyName from './GSS-decoders';
 import inventory from './inventory';
-import { indexes, csvRead, loadInventoriedDataset, doIndex } from './ingest-datasets.mjs';
+import { indexes, hierarchies, csvRead, loadInventoriedDataset, doIndex } from './ingest-datasets.mjs';
+import { pluralPropertyNameOf, isChildOf, relationTypes } from './helpers.mjs';
 
 // pass these as maxRows to limit the amount of data loaded!
 const VALID_ABERDEEN_POSTCODES = 18171;
 const VALID_A_POSTCODES_PLUS_BIRMINGHAM_B = 62042;
 
+// warning about hierarchies - replicated in ingest-datasets.mjs
 // warning: "If a postcode straddled an electoral ward/division or parish boundary, it was split between two or more OAs"
 // "In Scotland, OAs were based on postcodes as at December 2000 and related to 2001 wards. However, the OAs did not necessarily fit inside ward boundaries"
  // https://www.ons.gov.uk/methodology/geography/ukgeographies/censusgeography
 // TODO: DOUBLE CHECK - is MSOA11CD actually a child of LAD17CD???
 
-const heirarchies = [
-  ['PCDS', 'OA11', 'LSOA11CD', 'MSOA11CD', 'LAD17CD']
-]
+const siblingsOf = ( gssCode, options={} ) => {
+  const { specifiedParent, returnUnpackedIfOnlyOneParent=true } = options;
+  var possibleCodeTypes = indexCodesOf(gssCode);
+  // assuming for now that only one codeType is possible - TODO: nest filters to work forEach possibleCodeType
+  const codeType=possibleCodeTypes[0];
 
-const pluralPropertyNameOf = codeType => {
-  if (['POSTCODE','PCDS','postcode','pcds'].includes(codeType))
-    return 'postcodes'
-  else
-    return codeType.toLowerCase()+'s'
-}
+console.log(possibleCodeTypes);
+console.log(gssCode);
+console.log(Object.keys(indexes[codeType][gssCode]));
 
-// childCodeType, parentCodeType may be upper or lower case; childCodeType may be pluralised with s.
-const isChildOf = (childCodeType, parentCodeType) => {
-console.log('compare:',childCodeType, parentCodeType );
-  childCodeType = childCodeType.toUpperCase();
-  parentCodeType = parentCodeType.toUpperCase();
-  return (heirarchies
-    .filter (hierarchy => hierarchy.includes(parentCodeType))
-    .some (hierarchy => {
-      const childCandidate = hierarchy[ hierarchy.indexOf(parentCodeType) -1 ] ;
-      if (childCandidate==='PCDS' && childCodeType.startsWith('POSTCODE'))
-        return true
-      return (childCodeType===childCandidate || childCodeType===childCandidate+'S');
-    })
-  );
-}
+  // filter relationTypes which a) are the specified parent IF one is specified & b) are parents
+  var possibleParents =  Object.keys(indexes[codeType][gssCode])
+    .filter (relation => !specifiedParent || (relation.toupperCase() === specifiedParent.toupperCase() ))
+    .filter (relation => possibleCodeTypes.some(thisCode => isChildOf(thisCode,relation)) );
 
-// only implemented for whole ancestors/ descendants
-// returns object with whole & partial ancestors & descendants
-const relations = codeType => {
-  if (typeof codeType !== 'string')
-    console.log('Not a string!!!! (I should throw an error here)');
-  const indexables = ['pcds', 'OA11', 'LSOA11CD', 'MSOA11CD', 'LAD17CD'];
-  if (!(indexables.includes(codeType))) {
-    console.log(`${codeType} was not in `,indexables);
-    return {}
+  if (!possibleCodeTypes.length)
+    return { error: 'no index'};
+  if (!possibleParents.length){
+    console.log('Indexes:', Object.keys(indexes[codeType][gssCode]));
+    console.log('specifiedParent:', specifiedParent||'none');
+    console.log('possibleParents:', possibleParents);
+    return { error: 'no parents'};
   }
-  const wholeAncestors = [], wholeDescendants = [], partialAncestors = [], partialDescendants = [];
+  if (possibleParents.length > 1) {
+    console.log('siblingFail: possibleParents:, possibleParents');
+    return { error: 'ambiguous request for siblings'};
+  }
 
-  // TODO: Generalise for any hierarchy
-  if (codeType==='pcds')
-    wholeAncestors.push ('OA11');
-  if (codeType==='OA11' || wholeAncestors.includes('OA11'))
-    wholeAncestors.push ('LSOA11CD');
-  if (codeType==='LSOA11CD' || wholeAncestors.includes('LSOA11CD'))
-    wholeAncestors.push ('MSOA11CD');
-  if (codeType==='MSOA11CD' || wholeAncestors.includes('MSOA11CD'))
-    wholeAncestors.push ('LAD17CD');
+  var parentType = possibleParents[0]
+  const parent = indexes[codeType][gssCode][parentType];
+  parentType = parentType.toUpperCase();
 
-  if (codeType==='LAD17CD' || wholeDescendants.includes('LAD17CD'))
-    wholeDescendants.push ('MSOA11CD');
-  if (codeType==='MSOA11CD' || wholeDescendants.includes('MSOA11CD'))
-    wholeDescendants.push ('LSOA11CD');
-  if (codeType==='LSOA11CD' || wholeDescendants.includes('LSOA11CD'))
-    wholeDescendants.push ('OA11');
-  if (codeType==='OA11' || wholeDescendants.includes('OA11'))
-    wholeDescendants.push ('pcds');
+  console.log('parent:',parent);
+  console.log(parentType);
+  // console.log(indexes [parentType]);
+  // console.log(indexes [parentType] [parent]);
+  console.log(pluralPropertyNameOf(codeType));
+  console.log(indexes [parentType] [parent] [pluralPropertyNameOf(codeType)]);
+  const siblings = indexes [parentType] [parent] [pluralPropertyNameOf(codeType)];
+  console.log('siblings:',siblings);
 
-  return { wholeAncestors, wholeDescendants }// , partialAncestors, partialDescendants }
+  return siblings
 }
 
 // returns any first match between arrays, or undefined if no match.
@@ -148,51 +133,6 @@ const tellMeAbout = gssCode => {
 
 
 
-
-const siblingsOf = ( gssCode, options={} ) => {
-  const { specifiedParent, returnUnpackedIfOnlyOneParent=true } = options;
-  var possibleCodeTypes = indexCodesOf(gssCode);
-  // assuming for now that only one codeType is possible - TODO: nest filters to work forEach possibleCodeType
-  const codeType=possibleCodeTypes[0];
-
-console.log(possibleCodeTypes);
-console.log(gssCode);
-console.log(Object.keys(indexes[codeType][gssCode]));
-
-  // filter relations which a) are the specified parent IF one is specified & b) are parents
-  var possibleParents =  Object.keys(indexes[codeType][gssCode])
-    .filter (relation => !specifiedParent || (relation.toupperCase() === specifiedParent.toupperCase() ))
-    .filter (relation => possibleCodeTypes.some(thisCode => isChildOf(thisCode,relation)) );
-
-  if (!possibleCodeTypes.length)
-    return { error: 'no index'};
-  if (!possibleParents.length){
-    console.log('Indexes:', Object.keys(indexes[codeType][gssCode]));
-    console.log('specifiedParent:', specifiedParent||'none');
-    console.log('possibleParents:', possibleParents);
-    return { error: 'no parents'};
-  }
-  if (possibleParents.length > 1) {
-    console.log('siblingFail: possibleParents:, possibleParents');
-    return { error: 'ambiguous request for siblings'};
-  }
-
-  var parentType = possibleParents[0]
-  const parent = indexes[codeType][gssCode][parentType];
-  parentType = parentType.toUpperCase();
-
-  console.log('parent:',parent);
-  console.log(parentType);
-  // console.log(indexes [parentType]);
-  // console.log(indexes [parentType] [parent]);
-  console.log(pluralPropertyNameOf(codeType));
-  console.log(indexes [parentType] [parent] [pluralPropertyNameOf(codeType)]);
-  const siblings = indexes [parentType] [parent] [pluralPropertyNameOf(codeType)];
-  console.log('siblings:',siblings);
-
-  return siblings
-}
-
 // given a GSS code, report() sets a bunch of properties on an object relating to that code, and returns it.
 const report = ( gssCode, options={} ) => {
   if (!gssCode)
@@ -203,6 +143,7 @@ const report = ( gssCode, options={} ) => {
   const response = { gssCode };
   // Should only be one sensible code type to populate indexedAsCodetype  - keep an eye on..
   const possibleCodeTypes = indexCodesOf(gssCode);
+  // TODO: report for all possibleCodeTypes - find a suitable structure to report this, or error for ambiguity
   const indexedAsCodetype = firstCommonElement (possibleCodeTypes, Object.keys(indexes));
 
   response.codeLooksLike = whatIs(gssCode);
@@ -214,13 +155,13 @@ const report = ( gssCode, options={} ) => {
       break;
     case 1 : {
         response.codeType = possibleCodeTypes[0];
-        Object.assign (response, relations(response.codeType));
+        Object.assign (response, relationTypes(response.codeType));
       }
       break;
     default : {
         response.possibleCodeTypes = possibleCodeTypes;
         response.codeTypeBeingUsedForNow = indexedAsCodetype || possibleCodeTypes[0];
-        Object.assign (response, relations(response.codeTypeBeingUsedForNow));
+        Object.assign (response, relationTypes(response.codeTypeBeingUsedForNow));
       }
   }
 
@@ -231,7 +172,7 @@ const report = ( gssCode, options={} ) => {
   //   }
   //   else
   //     response.codeType = indexCodesOf(gssCode)[0]
-  //   Object.assign (response, relations(response.codeType||response.codeTypeBeingUsedForNow));
+  //   Object.assign (response, relationTypes(response.codeType||response.codeTypeBeingUsedForNow));
   // }
   // else {
   //   // unknown code type - don't bother with hierarchy

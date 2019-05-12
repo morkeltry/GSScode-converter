@@ -4,11 +4,20 @@ import fs from 'fs';
 // import { isGssCode, startsWithGssCode, whatIs } from './GSS-decoders';
 import anyName from './GSS-decoders';
 import inventory from './inventory';
+import { pluralPropertyNameOf} from './helpers.mjs';
 
 //  Filenames now come from inventory.js
 // let fileIn ='./data/pcds-oa11-lsoa11cd-msoa11cd-ladcd_Valid_postcodes_only.csv'
 //   , fileOut ='result.csv';
 const indexes = { OA11:{}, LSOA11CD:{}, MSOA11CD:{}, LAD17CD:{} };
+
+// warning: "If a postcode straddled an electoral ward/division or parish boundary, it was split between two or more OAs"
+// "In Scotland, OAs were based on postcodes as at December 2000 and related to 2001 wards. However, the OAs did not necessarily fit inside ward boundaries"
+ // https://www.ons.gov.uk/methodology/geography/ukgeographies/censusgeography
+// TODO: DOUBLE CHECK - is MSOA11CD actually a child of LAD17CD???
+const hierarchies = [
+  ['PCDS', 'OA11', 'LSOA11CD', 'MSOA11CD', 'LAD17CD']
+]
 const shouldIndex = {
   oa11 : true,
   lsoa11cd : true,
@@ -154,4 +163,4 @@ const doIndex = ( {results, headers, lookup} ) => {
 }
 
 
-  export { indexes, csvRead, loadInventoriedDataset, doIndex }
+  export { indexes, hierarchies, csvRead, loadInventoriedDataset, doIndex }
