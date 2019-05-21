@@ -50,6 +50,16 @@ const csvRead = (file, process= (x, lookup)=>x, maxRows=-1, progressLog= ()=>{} 
 
   return new Promise ((resolve, reject) => {
     fs.createReadStream(file)
+      .on('error', err => {
+        if (err.code==='ENOENT') {
+          console.log('\nAn error will be thrown:');
+          console.log('This could happen if you had no data file, or if you need to mount the filesystem that the file is in.\nMaybe try running ./mount-data-fs\n');
+          throw (err);
+        } else {
+          console.log(err);
+          throw (err);
+        }
+      })
       .pipe(csvParse())
       .on('data', (data) => {
         progressLog(data.length)
@@ -63,7 +73,7 @@ const csvRead = (file, process= (x, lookup)=>x, maxRows=-1, progressLog= ()=>{} 
           results.push( process(data, lookup) );
         }
       })
-      .on('end', () => resolve ({ results, headers, lookup }));
+      .on('end', () => resolve ({ results, headers, lookup }))
   });
 }
 
