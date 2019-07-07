@@ -128,6 +128,9 @@ You'll probably want those converted too (see above):
 python3 abridge_pcds-oa11-lsoa11cd-msoa11cd-ladcd_file.py
 ```
 
+##### { Error: Cannot find module }
+You may be in the wrong directory.
+In the case of the trimmer, things are in flux a bit. The .csv filenames or import paths may need tweaking instead/  as well
 
 ##### File name too long (error)
 
