@@ -1,5 +1,8 @@
 # js-xlsx
 
+### EASY start
+show-me-it-working.md
+
 ### GSS decoder
 
 'whatIs' tells you what kind of GSS code you're looking at.
@@ -10,6 +13,8 @@ cd transformers/js-xlsx
 node -e 'console.log(require("./GSS-decoders").whatIs("W15123456"))'
 ```
 where `W15123456` is your GSS code.
+
+(NB for js-xlsx branch of CampaignLab data-pipeline repo, use: `cd transformers/js-xlsx` )
 
 ### abridge postcode / GSS code lookup file
 

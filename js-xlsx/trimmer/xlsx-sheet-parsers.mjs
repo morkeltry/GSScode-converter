@@ -5,7 +5,7 @@
 
 
 // import { xlsxRead, csvWrite } from './xlsx-csv-convert';
-import decoders from './GSS-decoders';
+import decoders from '../GSS-decoders';
 const {isGssCode, startsWithGssCode, whatIs} = decoders;
 
 const splitterRegex = /^([a-zA-z]{1,2})(\d{1,})/;
