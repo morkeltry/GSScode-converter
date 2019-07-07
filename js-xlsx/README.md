@@ -1,7 +1,7 @@
 # js-xlsx
 
 ### EASY start
-show-me-it-working.md
+
 
 ### GSS decoder
 
