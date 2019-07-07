@@ -1,7 +1,7 @@
 # js-xlsx
 
 ### EASY start
-
+https://github.com/morkeltry/GSScode-converter/blob/master/js-xlsx/show-me-it-working.md
 
 ### GSS decoder
 
