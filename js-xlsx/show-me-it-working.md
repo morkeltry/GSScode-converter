@@ -4,6 +4,7 @@
 ```
 
 #### Show me what the converter does currently
+(spoiler - it downloads UK postcodes, strips out those not used before 2010, then makes its own lookup between those and wards ;)
 
 ##### Get the code and data and get them into a useable form
 
@@ -31,7 +32,8 @@ node --experimental-modules convert-areas.mjs
 (WORKING)
 
 
-#### Show me what the converter does currently
+#### Show me what the trimmer does currently
+(when it works, it strips rows and/or tables from a given tab of an .xlsx and then outputs it to .csv)
 
 ##### Get the code and data and get them into a useable form
 (WON'T WORK UNTIL: 
