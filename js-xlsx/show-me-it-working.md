@@ -23,17 +23,19 @@ python3 abridge_pcds-oa11-lsoa11cd-msoa11cd-ladcd_file.py
 ```
 node --experimental-modules bulk-convert.mjs
 ```
+(CURRENTLY NOT WORKING)
 OR
 ```
 node --experimental-modules convert-areas.mjs
 ```
+(WORKING)
 
 
 #### Show me what the converter does currently
 
 ##### Get the code and data and get them into a useable form
-
-Need to modify filename ../../../test.xls in curl command below and in xlsx-csv-convert.mjs
+(WON'T WORK UNTIL: 
+modify filename ../../../test.xls in curl command below and in xlsx-csv-convert.mjs )
 
 ```
 git clone https://github.com/morkeltry/GSScode-converter.git
