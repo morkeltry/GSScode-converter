@@ -191,11 +191,12 @@ const report = ( gssCode, options={} ) => {
 
 // TODO: include shouldIndex - explains why not indexed.
 
+// TODO: work out what you want the property 'ancestor' in the output of report() to represent - ancestor types, or actual ancestors?
 
   // get down to business
   if (response.indexed) {
-    if (response.wholeAncestors && response.wholeAncestors.length) {
-      response.ancestors = (response.ancestors || []) .concat(response.wholeAncestors);
+    if (response.wholeAncestorTypes && response.wholeAncestorTypes.length) {
+      response.ancestors = (response.ancestors || []) .concat(response.wholeAncestorTypes);
     // /////////////////////////////////////////////////////////////////////////////////////////
     // Need to start indexing consecutive levels. Currently indexes OAs from each level
     console.log('ANCESTOR TYPES of ',gssCode);
@@ -222,7 +223,7 @@ const report = ( gssCode, options={} ) => {
 
     }
 
-    if (response.wholeDescendants && response.wholeDescendants.length) {
+    if (response.wholeDescendantTypes && response.wholeDescendantTypes.length) {
       response.descendants = response.descendants || [];
 console.log('possibles:' , Object.keys(indexes[indexedAsCodetype][gssCode]) );
       Object.keys(indexes[indexedAsCodetype][gssCode])
@@ -246,15 +247,15 @@ console.log('possibles:' , Object.keys(indexes[indexedAsCodetype][gssCode]) );
           });
 
     }
-    if (response.partialAncestors && response.partialAncestors.length) {
+    if (response.partialAncestorTypes && response.partialAncestorTypes.length) {
       response.ancestors = response.ancestors || [];
-      response.partialAncestors.forEach (ancestorCodeType => {
+      response.partialAncestorTypes.forEach (ancestorCodeType => {
 
       });
     }
-    if (response.partialDescendants && response.partialDescendants.length) {
+    if (response.partialDescendantTypes && response.partialDescendantTypes.length) {
       response.descendants = response.descendants || [];
-      response.partialDescendants.forEach (descendantCodeType => {
+      response.partialDescendantTypes.forEach (descendantCodeType => {
 
       });
     }
@@ -312,7 +313,7 @@ if (runDirectFromCli) {
         // console.log('\nE00045170');
         // console.log(report('E00045170'));    // loadsa output!
         console.log('\nE00049607');
-        console.log(report('E00049607'));
+        console.log('Report:\n',report('E00049607'));
         // console.log('\nE01032176');
         // console.log(report('E01032176'));
       };

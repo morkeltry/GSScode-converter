@@ -59,28 +59,28 @@ const relationTypes = codeType => {
     console.log(`${codeType} was not in `,indexables);
     return {}
   }
-  const wholeAncestors = [], wholeDescendants = [], partialAncestors = [], partialDescendants = [];
+  const wholeAncestorTypes = [], wholeDescendantTypes = [], partialAncestorTypes = [], partialDescendantTypes = [];
 
   // TODO: Generalise for any hierarchy
   if (codeType==='pcds')
-    wholeAncestors.push ('OA11');
-  if (codeType==='OA11' || wholeAncestors.includes('OA11'))
-    wholeAncestors.push ('LSOA11CD');
-  if (codeType==='LSOA11CD' || wholeAncestors.includes('LSOA11CD'))
-    wholeAncestors.push ('MSOA11CD');
-  if (codeType==='MSOA11CD' || wholeAncestors.includes('MSOA11CD'))
-    wholeAncestors.push ('LAD17CD');
+    wholeAncestorTypes.push ('OA11');
+  if (codeType==='OA11' || wholeAncestorTypes.includes('OA11'))
+    wholeAncestorTypes.push ('LSOA11CD');
+  if (codeType==='LSOA11CD' || wholeAncestorTypes.includes('LSOA11CD'))
+    wholeAncestorTypes.push ('MSOA11CD');
+  if (codeType==='MSOA11CD' || wholeAncestorTypes.includes('MSOA11CD'))
+    wholeAncestorTypes.push ('LAD17CD');
 
-  if (codeType==='LAD17CD' || wholeDescendants.includes('LAD17CD'))
-    wholeDescendants.push ('MSOA11CD');
-  if (codeType==='MSOA11CD' || wholeDescendants.includes('MSOA11CD'))
-    wholeDescendants.push ('LSOA11CD');
-  if (codeType==='LSOA11CD' || wholeDescendants.includes('LSOA11CD'))
-    wholeDescendants.push ('OA11');
-  if (codeType==='OA11' || wholeDescendants.includes('OA11'))
-    wholeDescendants.push ('pcds');
+  if (codeType==='LAD17CD' || wholeDescendantTypes.includes('LAD17CD'))
+    wholeDescendantTypes.push ('MSOA11CD');
+  if (codeType==='MSOA11CD' || wholeDescendantTypes.includes('MSOA11CD'))
+    wholeDescendantTypes.push ('LSOA11CD');
+  if (codeType==='LSOA11CD' || wholeDescendantTypes.includes('LSOA11CD'))
+    wholeDescendantTypes.push ('OA11');
+  if (codeType==='OA11' || wholeDescendantTypes.includes('OA11'))
+    wholeDescendantTypes.push ('pcds');
 
-  return { wholeAncestors, wholeDescendants }// , partialAncestors, partialDescendants }
+  return { wholeAncestorTypes, wholeDescendantTypes }// , partialAncestorTypes, partialDescendantTypes }
 }
 
 

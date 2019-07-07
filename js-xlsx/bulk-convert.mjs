@@ -34,6 +34,8 @@ const addToSecondaryIndex = (row, arrIndex) => {
   })
 
 
+// remember arrIndex is the index within the headers array, already looked up to save repetitive calculation.
+
 const loadAndIndexInMemory = (filename, args) => {
   const getPostcodeLookup = loadInventoriedDataset( inventory.postcodes_valid_to_OAs, {maxRows : VALID_A_POSTCODES_PLUS_BIRMINGHAM_B} )
     .then ( ingestedData => {
@@ -54,7 +56,7 @@ const loadAndIndexInMemory = (filename, args) => {
           resolve (result);
         })
     })
-    : Promise.resolve (args.map (x=>x) );
+    : Promise.resolve (args.map (x=>x) );   /// Nonsense!
 
   return Promise.all ([getPostcodeLookup, getBatchData])
 }
@@ -69,7 +71,7 @@ const args = process.argv.slice (2);
 if (!args.length)
   printHelpMessage()
 else {
-  const batchFilename = fs.existsSync(args[0]) && args[0]);
+  const batchFilename = fs.existsSync(args[0]) && args[0];
   if (batchFilename)
     console.log('Thats a file that exists.');
 
