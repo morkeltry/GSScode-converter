@@ -4,7 +4,7 @@
   "description": "convert xlsx to csv using js-xlsx",
   "main": "index.js",
   "dependencies": {
-    "csv-parse": "^4.3.4",
+    "csv-parse": "^4.4.6",
     "excelcsv": "^0.1.2",
     "stream-meter": "^1.0.4",
     "webcharts": "^1.10.0",
